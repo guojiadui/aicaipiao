@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <include layout="@layout/custom_toolbar" />
+
+    <com.caipiao.caipiao.view.MultipleStatusView
+        android:id="@+id/multipleStatusView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/betting"
+                style="@style/Txtredbig"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dp_45"
+                android:gravity="center"
+                android:text="直接投注" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dp_1"
+                android:background="@color/line_gray" />
+
+            <com.scwang.smartrefresh.layout.SmartRefreshLayout
+                android:id="@+id/refreshLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:overScrollMode="never" />
+
+                <com.scwang.smartrefresh.layout.footer.ClassicsFooter
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:srlClassicsSpinnerStyle="Translate"
+                    app:srlDrawableArrow="@mipmap/loading_throbber"
+                    app:srlDrawableArrowSize="20dp"
+                    app:srlDrawableMarginRight="20dp"
+                    app:srlDrawableProgressSize="20dp"
+                    app:srlDrawableSize="20dp"
+                    app:srlEnableLastTime="true"
+                    app:srlFinishDuration="500"
+                    app:srlTextSizeTime="10dp"
+                    app:srlTextSizeTitle="16sp"
+                    app:srlTextTimeMarginTop="2dp" />
+            </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+        </LinearLayout>
+
+    </com.caipiao.caipiao.view.MultipleStatusView>
+</LinearLayout>

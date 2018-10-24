@@ -1,0 +1,173 @@
+package com.caipiao.caipiao.mvp.details;
+
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
+
+
+import com.caipiao.caipiao.R;
+import com.caipiao.caipiao.base.BaseActivity;
+import com.caipiao.caipiao.mvp.bean.OpenPrizeBean;
+import com.caipiao.caipiao.mvp.details.adapter.OPenPrizeDetailsAdapter;
+import com.caipiao.caipiao.mvp.details.baseview.IOpenPrizeDetailsBaseView;
+import com.caipiao.caipiao.mvp.details.bean.OpenPrizeListBean;
+import com.caipiao.caipiao.mvp.details.presenter.OpenPrizeDetailspresenter;
+import com.caipiao.caipiao.view.CustomToolbar;
+import com.caipiao.caipiao.view.MultipleStatusView;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnLoadMoreListener;
+
+
+import java.util.List;
+
+import butterknife.BindView;
+
+/**
+ * 开奖列表详情页
+ */
+public class OpenPrizedetailsActivity extends BaseActivity<OpenPrizeDetailspresenter> implements OnLoadMoreListener, IOpenPrizeDetailsBaseView {
+
+
+    @BindView(R.id.customtoolbar)
+    CustomToolbar customtoolbar;
+    @BindView(R.id.betting)
+    TextView betting;
+    @BindView(R.id.recyclerView)
+    RecyclerView recyclerView;
+    @BindView(R.id.refreshLayout)
+    SmartRefreshLayout refreshLayout;
+    @BindView(R.id.multipleStatusView)
+    MultipleStatusView multipleStatusView;
+
+    public static void start(Context context, OpenPrizeBean.DataBean dataBean) {
+        Intent intent = new Intent(context, OpenPrizedetailsActivity.class);
+        intent.putExtra("name", dataBean.getLotName());
+        intent.putExtra("lotType", dataBean.getLotType());
+        intent.putExtra("code", dataBean.getLotCode());
+        context.startActivity(intent);
+    }
+
+    public static void start(Context context, String name, String lotType, String code) {
+        Intent intent = new Intent(context, OpenPrizedetailsActivity.class);
+        intent.putExtra("name", name);
+        intent.putExtra("lotType", lotType);
+        intent.putExtra("code", code);
+        context.startActivity(intent);
+    }
+
+    @Override
+    public int getLayout() {
+        return R.layout.open_prize_details_activity_layout;
+    }
+
+    String name;
+    int lotType;
+    String code;
+
+    OPenPrizeDetailsAdapter penPrizeDetailsAdapter;
+
+
+    @Override
+    protected void initView(Bundle savedInstanceState) {
+        presenter = OpenPrizeDetailspresenter.newInstance();
+        presenter.attachView(this);
+        name = getIntent().getStringExtra("name");
+        lotType = getIntent().getIntExtra("lotType", 0);
+        code = getIntent().getStringExtra("code");
+        presenter.setCode(code);
+        customtoolbar.setMainTitle(name);
+        customtoolbar.mTvMainTitleLeft.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+        betting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //  BettingDetailsActivity.start(OpenPrizedetailsActivity.this,code);
+            }
+        });
+        multipleStatusView.setOnRetryClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                multipleStatusView.showLoading();
+                presenter.LoadDaata(OpenPrizedetailsActivity.this);
+            }
+        });
+        refreshLayout.setEnableRefresh(false);//是否启用下拉刷新功能
+        refreshLayout.setEnableLoadMore(true);//是否启用上拉加载功能
+        refreshLayout.setOnLoadMoreListener(this);
+    }
+
+
+    @Override
+    protected void initdata() {
+        super.initdata();
+        multipleStatusView.showLoading();
+        presenter.LoadDaata(this);
+
+    }
+
+    @Override
+    public void onLoadMore(@NonNull RefreshLayout refreshLayout) {
+        //  refreshLayout.finishLoadMore();
+        if (presenter != null)
+            presenter.LoadDaata(this);
+    }
+
+
+    @Override
+    public void onSuccess(List<OpenPrizeListBean.DataBean.ListBean> contentBeans, boolean hasNext) {
+        multipleStatusView.showContent();
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        penPrizeDetailsAdapter = new OPenPrizeDetailsAdapter(this, contentBeans, lotType);
+        recyclerView.setAdapter(penPrizeDetailsAdapter);
+         if (!hasNext) {
+            refreshLayout.finishLoadMoreWithNoMoreData();
+        }
+    }
+
+    @Override
+    public void onEmpty() {
+        multipleStatusView.showEmpty();
+    }
+
+    @Override
+    public void onError() {
+        multipleStatusView.showError();
+    }
+
+    @Override
+    public void onMore(List<OpenPrizeListBean.DataBean.ListBean> contentBeans, boolean hasNext) {
+        refreshLayout.finishLoadMore();
+        if (penPrizeDetailsAdapter == null) {
+            return;
+        }
+        penPrizeDetailsAdapter.addData(contentBeans);
+         if (!hasNext) {
+            refreshLayout.finishLoadMoreWithNoMoreData();
+        }
+    }
+
+    @Override
+    public void onMoreEmpty() {
+        refreshLayout.finishLoadMore();
+        Toast.makeText(this, "数据为空", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onMoreError() {
+        refreshLayout.finishLoadMore();
+        Toast.makeText(this, "请求出错", Toast.LENGTH_SHORT).show();
+    }
+}
